@@ -29,9 +29,9 @@ const createSendToken = (user: UserType, statusCode: number, res: Res) => {
 
   res.status(statusCode).json({
     status: "success",
-    message: "Successfully signed up!",
+    message: "Successfully logged in!",
     token,
-    data: { user },
+    navigateTo: "/",
   });
 };
 
@@ -58,8 +58,7 @@ export const login = async (req: Req, res: Res) => {
   console.log(email);
   console.log(pass);
   console.log(user);
-  console.log(user.pass);
-  console.log(await user.correctPassword(pass, user.pass!));
+
   //check if user exists and password is correct
   if (!user || !(await user.correctPassword(pass, user.pass!))) {
     return res.status(401).json({ message: "Incorrect email or password!" });
@@ -69,7 +68,7 @@ export const login = async (req: Req, res: Res) => {
 };
 
 export const signup = async (req: Req, res: Res) => {
-  console.log("reached signup");
+  console.log("signup");
   const signupData: Login = req.body;
   const email: string = signupData.email;
   const pass: string = signupData.pass;
@@ -95,5 +94,9 @@ export const signup = async (req: Req, res: Res) => {
     pass: pass,
   });
 
-  createSendToken(newUser, 201, res);
+  return res.status(201).json({
+    status: "success",
+    message: "Successfully signed up! Login to continue!",
+    navigateTo: "/login",
+  });
 };
