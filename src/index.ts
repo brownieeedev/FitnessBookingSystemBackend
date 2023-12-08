@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 //Routers
 import userRouter from "./routers/userRouter";
+import trainerRouter from "./routers/trainerRouter";
 
 const app = express();
 const port = 5001;
@@ -26,7 +27,9 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
+//Use routers
 app.use("/api/users", userRouter);
+app.use("/api/trainers", trainerRouter);
 
 //Connecting to ATLAS cluster (to MongoDB's cloud db)
 mongoose

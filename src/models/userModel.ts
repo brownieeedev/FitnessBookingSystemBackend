@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
+// import crypto from "crypto";
 
 export type UserType = {
   _id: string;
@@ -13,7 +13,7 @@ export type UserType = {
   phone?: string;
   registrationDate?: Date;
   passwordChangedAt?: Date;
-  role?: string;
+  role?: "user" | "trainer" | "admin";
   passwordResetToken?: string;
   passwordResetTokenExpires?: Date;
 
@@ -40,7 +40,7 @@ const userSchema = new Schema<UserType>({
   phone: { type: String },
   registrationDate: { type: Date, required: true, default: Date.now() },
   passwordChangedAt: { type: Date },
-  role: { type: String, enum: ["user", "admin"], default: "user" },
+  role: { type: String, enum: ["user", "trainer", "admin"], default: "user" },
   passwordResetToken: { type: String },
   passwordResetTokenExpires: { type: Date },
 });
