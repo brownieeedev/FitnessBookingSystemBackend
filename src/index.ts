@@ -10,6 +10,7 @@ import mongoSanitize from "express-mongo-sanitize";
 //Routers
 import userRouter from "./routers/userRouter";
 import trainerRouter from "./routers/trainerRouter";
+import bookingRouter from "./routers/bookingRouter";
 
 const app = express();
 const port = 5001;
@@ -27,10 +28,6 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-//Use routers
-app.use("/api/users", userRouter);
-app.use("/api/trainers", trainerRouter);
-
 //Connecting to ATLAS cluster (to MongoDB's cloud db)
 mongoose
   .connect(process.env.DB_CON_STRING as string)
@@ -40,6 +37,11 @@ mongoose
   .catch((err) => {
     console.error("DB connection error:", err);
   });
+
+//Use routers
+app.use("/api/users", userRouter);
+app.use("/api/trainers", trainerRouter);
+app.use("/api/booking", bookingRouter);
 
 //Server
 app.listen(process.env.PORT || 5001, () => {

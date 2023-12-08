@@ -18,6 +18,7 @@ export type UserType = {
   passwordResetTokenExpires?: Date;
 
   correctPassword: (Password: string, userPassword: string) => Promise<boolean>;
+  changedPasswordAfter: (JWTTimeStamp: number) => boolean;
 };
 
 const userSchema = new Schema<UserType>({
@@ -73,5 +74,19 @@ userSchema.pre(/^find/, function (this: any, next) {
   this.find({ active: { $ne: false } });
   next();
 });
+
+userSchema.methods.changedPasswordAfter = function (
+  this: any,
+  JWTTimeStamp: number
+) {
+  if (this.passwordChangedAt) {
+    const passwordChangedAt =
+      parseInt(this.passwordChangedAt.getTime(), 10) / 1000;
+    //console.log(passwordChangedAt, JWTTimeStamp);
+    return JWTTimeStamp < passwordChangedAt;
+  }
+  //False == nem lett megváltoztatva még a jelszó soha
+  return false;
+};
 
 export const User = model<UserType>("User", userSchema);

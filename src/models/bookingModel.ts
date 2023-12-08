@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { InferSchemaType, Schema, model } from "mongoose";
 
 //Model
 import { User } from "./userModel";
@@ -9,7 +9,10 @@ const bookingSchema = new Schema({
   trainer: { type: Schema.Types.ObjectId, ref: Trainer, required: true },
   date: { type: String, required: true },
   time: { type: String, required: true },
+  trainingType: { type: String, required: true },
   trainingPrice: { type: Number },
 });
 
-const Booking = model("Booking", bookingSchema);
+export type BookingType = InferSchemaType<typeof bookingSchema>;
+
+export const Booking = model("Booking", bookingSchema);

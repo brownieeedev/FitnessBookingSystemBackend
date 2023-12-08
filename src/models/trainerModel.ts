@@ -4,9 +4,9 @@ import validator from "validator";
 //Extending userType
 import { UserType } from "./userModel";
 
-type AvailableTime = {
+export type AvailableTime = {
   day: string;
-  time: string[];
+  times: string[];
 };
 
 type Links = {
@@ -54,7 +54,7 @@ const trainerSchema = new Schema<TrainerType>({
   available: [
     {
       day: { type: String },
-      time: [{ type: String }],
+      times: [{ type: String }],
     },
   ],
   introduction: { type: String },

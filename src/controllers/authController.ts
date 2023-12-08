@@ -1,5 +1,6 @@
 import { Request as Req, Response as Res } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { Secret, VerifyCallback } from "jsonwebtoken";
+import { promisify } from "util";
 //Model
 import { User } from "../models/userModel";
 import { UserType } from "../models/userModel";
@@ -9,8 +10,14 @@ type Login = {
   pass: string;
 };
 
+const signToken = (id: string) => {
+  return jwt.sign({ id: id }, process.env.JWT_SECRET as string, {
+    expiresIn: parseInt(process.env.JWT_EXPIRES_IN as string, 10),
+  });
+};
+
 const createSendToken = (user: UserType, statusCode: number, res: Res) => {
-  console.log("Reached createSendToken");
+  // console.log("Reached createSendToken");
   const token = signToken(user._id);
 
   //Sending COOKIE
@@ -35,14 +42,8 @@ const createSendToken = (user: UserType, statusCode: number, res: Res) => {
   });
 };
 
-const signToken = (id: string) => {
-  return jwt.sign({ id: id }, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
-
 export const login = async (req: Req, res: Res) => {
-  console.log("login");
+  // console.log("login");
   const loginData: Login = req.body;
   const email: string = loginData.email;
   const pass: string = loginData.pass;
@@ -55,9 +56,9 @@ export const login = async (req: Req, res: Res) => {
   }
   const user: UserType = await User.findOne({ email }).select("+pass");
 
-  console.log(email);
-  console.log(pass);
-  console.log(user);
+  // console.log(email);
+  // console.log(pass);
+  // console.log(user);
 
   //check if user exists and password is correct
   if (!user || !(await user.correctPassword(pass, user.pass!))) {
@@ -68,7 +69,7 @@ export const login = async (req: Req, res: Res) => {
 };
 
 export const signup = async (req: Req, res: Res) => {
-  console.log("signup");
+  // console.log("signup");
   const signupData: Login = req.body;
   const email: string = signupData.email;
   const pass: string = signupData.pass;
@@ -99,4 +100,49 @@ export const signup = async (req: Req, res: Res) => {
     message: "Successfully signed up! Login to continue!",
     navigateTo: "/login",
   });
+};
+
+export const protect = async (req: Req, res: Res, next: any) => {
+  //1) Getting token and check if it exists
+  // console.log("protect");
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+  // console.log(token);
+  if (!token) {
+    return res
+      .status(401)
+      .send("You are not logged in please login to get access");
+  }
+  //2) Validate token
+  const verifyAsync = promisify(jwt.verify) as (
+    token: string,
+    secret: Secret
+  ) => Promise<any>;
+
+  const decoded = await verifyAsync(token, process.env.JWT_SECRET as string);
+  // console.log("decoded ", decoded);
+  //3)Check if user still exists
+  const currentUser: UserType | null = await User.findById((decoded as any).id);
+  // console.log(currentUser);
+  if (!currentUser) {
+    return res.status(401).send("The user to the token does not exist!");
+  }
+  //4) Check if user changed password after the token was issued
+  if (currentUser.changedPasswordAfter((decoded as any).iat as number)) {
+    return res
+      .status(401)
+      .send("Recently changed password, please login again!");
+  }
+
+  //Next middleware can be accessed
+  (req as any).user = currentUser;
+  res.locals.user = currentUser;
+  next();
 };
