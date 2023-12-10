@@ -12,11 +12,13 @@ export type AvailableTime = {
 type Links = {
   name: string;
   link: string;
+  icon: string;
 };
 
 export type TrainerType = UserType & {
   available: AvailableTime[];
   title?: string;
+  sex?: "Male" | "Female";
   introduction: string;
   profilePicture?: string;
   introVideo?: string;
@@ -63,6 +65,7 @@ const trainerSchema = new Schema<TrainerType>({
   profilePicture: { type: String },
   introVideo: { type: String },
   trainingTypes: [{ type: String }],
+  sex: { type: String },
   places: [{ type: String }],
   links: [
     {
