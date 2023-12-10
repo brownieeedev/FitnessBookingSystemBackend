@@ -1,11 +1,16 @@
 import { Request as Req, Response as Res } from "express";
-import jwt, { Secret, VerifyCallback } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import { Secret } from "jsonwebtoken";
 import { promisify } from "util";
 //Model
 import { User } from "../models/userModel";
 import { UserType } from "../models/userModel";
+import { Trainer } from "../models/trainerModel";
 
-type Login = {
+//Types
+import { TrainerType } from "../models/trainerModel";
+
+export type Login = {
   email: string;
   pass: string;
 };
@@ -66,6 +71,34 @@ export const login = async (req: Req, res: Res) => {
   }
 
   createSendToken(user, 200, res);
+};
+
+export const trainerLogin = async (req: Req, res: Res) => {
+  // console.log("login");
+  const loginData: Login = req.body;
+  const email: string = loginData.email;
+  const pass: string = loginData.pass;
+
+  if (!email || !pass) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Please provide email and password!",
+    });
+  }
+
+  //Searching in TRAINER collection
+  const trainer = await Trainer.findOne({ email }).select("+pass");
+
+  // console.log(email);
+  // console.log(pass);
+  // console.log(user);
+
+  //check if user exists and password is correct
+  if (!trainer || !(await trainer.correctPassword(pass, trainer.pass!))) {
+    return res.status(401).json({ message: "Incorrect email or password!" });
+  }
+
+  createSendToken(trainer, 200, res);
 };
 
 export const signup = async (req: Req, res: Res) => {
@@ -144,5 +177,56 @@ export const protect = async (req: Req, res: Res, next: any) => {
   //Next middleware can be accessed
   (req as any).user = currentUser;
   res.locals.user = currentUser;
+  next();
+};
+
+export const protectTrainer = async (req: Req, res: Res, next: any) => {
+  console.log("protectTrainer");
+
+  //1) Getting token and check if it exists
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+  console.log(token);
+  if (!token) {
+    return res
+      .status(401)
+      .send("You are not logged in please login to get access");
+  }
+  //2) Validate token
+  const verifyAsync = promisify(jwt.verify) as (
+    token: string,
+    secret: Secret
+  ) => Promise<any>;
+
+  const decoded = await verifyAsync(token, process.env.JWT_SECRET as string);
+  // console.log("decoded ", decoded);
+
+  //3)Check if user still exists
+  const currentTrainer: TrainerType | null = await Trainer.findById(
+    (decoded as any).id
+  );
+  // console.log(currentTrainer);
+  // console.log(currentTrainer);
+  if (!currentTrainer) {
+    return res.status(401).send("The user to the token does not exist!");
+  }
+  //4) Check if user changed password after the token was issued
+  if (currentTrainer.changedPasswordAfter((decoded as any).iat as number)) {
+    return res
+      .status(401)
+      .send("Recently changed password, please login again!");
+  }
+  console.log("inside");
+
+  //Next middleware can be accessed
+  (req as any).user = currentTrainer;
+  res.locals.user = currentTrainer;
   next();
 };

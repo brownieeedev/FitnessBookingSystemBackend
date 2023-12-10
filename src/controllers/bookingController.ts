@@ -19,7 +19,6 @@ export const bookTraining = async (req: Req, res: Res) => {
   const available = trainerDoc?.get("available") as AvailableTime[];
 
   // console.log(available);
-
   const availableObj = available.find(
     (el) => el.day === dayjs(bookingData.date).format("YYYY.MM.DD")
   );
