@@ -46,6 +46,7 @@ const trainerSchema = new Schema<TrainerType>({
   address: { type: String },
   title: { type: String, default: "Personal Trainer" },
   phone: { type: String },
+  dateOfBirth: { type: Date },
   registrationDate: { type: Date, required: true, default: Date.now() },
   passwordChangedAt: { type: Date },
   role: {

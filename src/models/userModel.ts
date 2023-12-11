@@ -10,6 +10,7 @@ export type UserType = {
   email: string;
   pass: string | undefined;
   address?: string;
+  dateOfBirth?: Date;
   phone?: string;
   registrationDate?: Date;
   passwordChangedAt?: Date;
@@ -40,6 +41,7 @@ const userSchema = new Schema<UserType>({
   address: { type: String },
   phone: { type: String },
   registrationDate: { type: Date, required: true, default: Date.now() },
+  dateOfBirth: { type: Date },
   passwordChangedAt: { type: Date },
   role: { type: String, enum: ["user", "trainer", "admin"], default: "user" },
   passwordResetToken: { type: String },
