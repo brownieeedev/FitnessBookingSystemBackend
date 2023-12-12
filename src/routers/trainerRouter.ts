@@ -6,6 +6,7 @@ import {
   getAllTrainers,
   updateIntroduction,
   getMe,
+  updateAvailability,
 } from "../controllers/trainerController";
 import { protectTrainer, trainerLogin } from "../controllers/authController";
 
@@ -16,5 +17,6 @@ trainerRouter.get("/alltrainers", getAllTrainers);
 //Protected
 trainerRouter.patch("/updateIntroduction", protectTrainer, updateIntroduction);
 trainerRouter.get("/me", protectTrainer, getMe);
+trainerRouter.patch("/updateAvailability", protectTrainer, updateAvailability);
 
 export default trainerRouter;

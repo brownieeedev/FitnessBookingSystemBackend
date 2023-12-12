@@ -56,12 +56,15 @@ const trainerSchema = new Schema<TrainerType>({
   },
   passwordResetToken: { type: String },
   passwordResetTokenExpires: { type: Date },
-  available: [
-    {
-      day: { type: String },
-      times: [{ type: String }],
-    },
-  ],
+  available: {
+    type: [
+      {
+        day: { type: String, unique: true },
+        times: [{ type: String, unique: true }],
+      },
+    ],
+    default: [],
+  },
   introduction: { type: String },
   profilePicture: { type: String },
   introVideo: { type: String },
