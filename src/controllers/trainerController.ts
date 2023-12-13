@@ -4,6 +4,7 @@ import { Request as Req, Response as Res } from "express";
 import { AvailableTime } from "../models/trainerModel";
 //Model
 import { Trainer } from "../models/trainerModel";
+import { Booking } from "../models/bookingModel";
 
 //GET
 export const getAllTrainers = async (req: Req, res: Res) => {
@@ -32,6 +33,25 @@ export const getMe = async (req: Req, res: Res) => {
     message: "Successfully fetched trainer!",
     data: trainer,
   });
+};
+
+export const getBookingsToTrainer = async (req: Req, res: Res) => {
+  console.log("getBookingsToTrainer");
+  try {
+    const bookings = await Booking.find({ trainer: (req as any).user.id });
+    console.log(bookings);
+    return res.status(200).json({
+      status: "success",
+      message: "Successfully fetched bookings!",
+      data: bookings,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      status: "fail",
+      message: "Something went wrong! Could not fetch your bookings!",
+    });
+  }
 };
 
 //POST
@@ -85,6 +105,8 @@ export const updateAvailability = async (req: Req, res: Res) => {
     });
   }
 
+  console.log(availability);
+
   //if for some reason trainer would not have an id
   if (!(req as any).user.id) {
     return res.status(401).json({
@@ -109,37 +131,38 @@ export const updateAvailability = async (req: Req, res: Res) => {
     ...trainerAvailableFromDb.available,
   ];
 
-  let index: number = 0;
-  let updatedObj: AvailableTime;
-  trainerAvailableFromDb?.available.forEach((obj) => {
+  let dayFound = false;
+
+  newAvailableArray = newAvailableArray.map((obj) => {
     if (obj.day === availability.day) {
+      dayFound = true;
       const combinedArray = obj.times.concat(availability.times);
       const uniqueArray = [...new Set(combinedArray)];
 
-      console.log("uniqueArray", uniqueArray);
-
-      updatedObj = {
+      return {
         day: obj.day,
         times: uniqueArray,
       };
-      return;
-      //add updatedObj to newObj
     }
-    index++;
+    return obj;
   });
 
-  //CONTINUE HERE
-
-  // newAvailableArray[index] = updatedObj;
+  if (!dayFound) {
+    //in this case the day is not in the array yet
+    newAvailableArray = [...newAvailableArray, availability];
+    // newAvailableArray.push(availability);
+  }
 
   try {
     //Save to trainers introduction field the introduction
-    // console.log(availability);
+    // console.log("inside try");
+    // console.log(newAvailableArray);
     await Trainer.findByIdAndUpdate((req as any).user.id, {
       available: newAvailableArray,
     });
-    return res.status(200).json({
+    return res.status(201).json({
       status: "success",
+      statusCode: 201,
       message: "Successfully edited availability!",
     });
   } catch (err) {

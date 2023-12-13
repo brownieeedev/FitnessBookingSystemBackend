@@ -59,8 +59,8 @@ const trainerSchema = new Schema<TrainerType>({
   available: {
     type: [
       {
-        day: { type: String, unique: true },
-        times: [{ type: String, unique: true }],
+        day: { type: String },
+        times: [{ type: String }],
       },
     ],
     default: [],

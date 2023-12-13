@@ -21,8 +21,9 @@ app.use(express.json());
 app.use(compression());
 //Security middlewares
 app.use(mongoSanitize());
+
 const limiter = rateLimit({
-  max: 100,
+  max: 500, //for testing it is 500, in production it should be 100
   windowMs: 30 * 60 * 1000,
   message: "Too many requests from this IP, please try again in an hour!",
 });

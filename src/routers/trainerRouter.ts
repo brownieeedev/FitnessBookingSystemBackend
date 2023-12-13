@@ -7,6 +7,7 @@ import {
   updateIntroduction,
   getMe,
   updateAvailability,
+  getBookingsToTrainer,
 } from "../controllers/trainerController";
 import { protectTrainer, trainerLogin } from "../controllers/authController";
 
@@ -18,5 +19,6 @@ trainerRouter.get("/alltrainers", getAllTrainers);
 trainerRouter.patch("/updateIntroduction", protectTrainer, updateIntroduction);
 trainerRouter.get("/me", protectTrainer, getMe);
 trainerRouter.patch("/updateAvailability", protectTrainer, updateAvailability);
+trainerRouter.get("/getmybookings", protectTrainer, getBookingsToTrainer);
 
 export default trainerRouter;
