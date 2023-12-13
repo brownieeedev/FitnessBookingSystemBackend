@@ -1,5 +1,5 @@
 import { Request as Req, Response as Res } from "express";
-
+import dayjs from "dayjs";
 //Types
 import { AvailableTime } from "../models/trainerModel";
 //Model
@@ -37,13 +37,25 @@ export const getMe = async (req: Req, res: Res) => {
 
 export const getBookingsToTrainer = async (req: Req, res: Res) => {
   console.log("getBookingsToTrainer");
+  //get todays string
+  const today = dayjs(new Date()).format("YYYY.MM.DD");
   try {
     const bookings = await Booking.find({ trainer: (req as any).user.id });
+    const bookingsToday = bookings.filter((booking) => booking.date === today);
+
+    console.log(bookingsToday);
     console.log(bookings);
+
     return res.status(200).json({
       status: "success",
+      statusCode: 200,
       message: "Successfully fetched bookings!",
-      data: bookings,
+      data: {
+        bookings,
+        bookingsToday,
+        bookingsLength: bookings.length,
+        bookingsTodayLength: bookingsToday.length,
+      },
     });
   } catch (err) {
     console.log(err);
