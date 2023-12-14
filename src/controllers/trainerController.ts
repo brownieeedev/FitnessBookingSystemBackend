@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { AvailableTime } from "../models/trainerModel";
 //Model
 import { Trainer } from "../models/trainerModel";
-import { Booking } from "../models/bookingModel";
+import { Booking, BookingType } from "../models/bookingModel";
 
 //GET
 export const getAllTrainers = async (req: Req, res: Res) => {
@@ -43,8 +43,16 @@ export const getBookingsToTrainer = async (req: Req, res: Res) => {
     const bookings = await Booking.find({ trainer: (req as any).user.id });
     const bookingsToday = bookings.filter((booking) => booking.date === today);
 
-    console.log(bookingsToday);
-    console.log(bookings);
+    const onlineTrainings: BookingType[] = bookings.filter(
+      (booking) => booking.trainingType === "online"
+    );
+
+    const inpersonTrainings: BookingType[] = bookings.filter(
+      (booking) => booking.trainingType === "inperson"
+    );
+
+    // console.log(bookingsToday);
+    // console.log(bookings);
 
     return res.status(200).json({
       status: "success",
@@ -55,6 +63,10 @@ export const getBookingsToTrainer = async (req: Req, res: Res) => {
         bookingsToday,
         bookingsLength: bookings.length,
         bookingsTodayLength: bookingsToday.length,
+        onlineTrainings,
+        inpersonTrainings,
+        onlineTrainingsLength: onlineTrainings.length,
+        inpersonTrainingsLength: inpersonTrainings.length,
       },
     });
   } catch (err) {
