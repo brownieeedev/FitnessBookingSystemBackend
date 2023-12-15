@@ -11,6 +11,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import userRouter from "./routers/userRouter";
 import trainerRouter from "./routers/trainerRouter";
 import bookingRouter from "./routers/bookingRouter";
+import videoRouter from "./routers/videoRouter";
 
 const app = express();
 const port = 5001;
@@ -43,6 +44,7 @@ mongoose
 app.use("/api/users", userRouter);
 app.use("/api/trainers", trainerRouter);
 app.use("/api/booking", bookingRouter);
+app.use("/api/video", videoRouter);
 
 //Server
 app.listen(process.env.PORT || 5001, () => {
