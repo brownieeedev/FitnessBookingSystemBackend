@@ -14,5 +14,4 @@ const bookingSchema = new Schema({
 });
 
 export type BookingType = InferSchemaType<typeof bookingSchema>;
-
 export const Booking = model("Booking", bookingSchema);
